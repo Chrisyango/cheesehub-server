@@ -14,17 +14,6 @@ const seedData = require('./db/cheeses.json');
 
 const app = express();
 
-
-app.get('/api/cheeses', (req, res, next) => {
-  Cheese.find()
-    .then(cheeses => {
-      res.json(cheeses.map(cheese => {
-        return cheese.serialize();
-      }));
-    })
-    .catch(next);
-});
-
 app.use(
   morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', {
     skip: (req, res) => process.env.NODE_ENV === 'test'
@@ -36,6 +25,35 @@ app.use(
     origin: CLIENT_ORIGIN
   })
 );
+
+app.get('/api/cheeses', (req, res, next) => {
+  Cheese.find()
+    .then(cheeses => {
+      res.json(cheeses.map(cheese => {
+        return cheese.serialize();
+      }));
+    })
+    .catch(next);
+});
+
+// app.post('/api/cheeses', (req, res, next) => {
+//   const {name} = req.body;
+//   const newCheese = {name};
+
+//   if (!name) {
+//     const err = new Error('Missing `name` in request body');
+//     err.status = 400;
+//     return next(err);
+//   }
+
+//   Cheese.create(newCheese)
+//     .then(cheese => {
+//       res.status(201)
+//         .location(`${req.originalUrl}/${cheese.id}`)
+//         .json(cheese);
+//     })
+//     .catch(err => next(err));
+// });
 
 // For inserting Data ===================================
 mongoose.connect(DATABASE_URL)
