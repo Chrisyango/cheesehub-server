@@ -14,6 +14,7 @@ const seedData = require('./db/cheeses.json');
 
 const app = express();
 
+
 app.get('/api/cheeses', (req, res, next) => {
   Cheese.find()
     .then(cheeses => {
@@ -36,26 +37,31 @@ app.use(
   })
 );
 
+// For inserting Data ===================================
+mongoose.connect(DATABASE_URL)
+  .then(() => {
+    return mongoose.connection.db.dropDatabase()
+      .then(result => {
+        console.info(`Dropped Database: ${result}`);
+      });
+  })
+  .then(() => {
+    return Cheese.insertMany(seedData)
+      .then(results => {
+        console.info(`Inserted ${results.length} Cheeses`);
+      });
+  });
+
+
 function runServer(port = PORT) {
-  mongoose.connect(DATABASE_URL)
-    .then(() => {
-      Cheese.insertMany(seedData);
+  const server = app
+    .listen(port, () => {
+      console.info(`App listening on port ${server.address().port}`);
     })
-    .catch(err => {
-      console.error('ERROR: Mongoose failed to connect! Is the database running?');
+    .on('error', err => {
+      console.error('Express failed to start');
       console.error(err);
     });
-  const server = app.listen(port, () => {
-    console.info(`App listening on port ${server.address().port}`);
-  });
-  // const server = app
-  //   .listen(port, () => {
-  //     console.info(`App listening on port ${server.address().port}`);
-  //   })
-  //   .on('error', err => {
-  //     console.error('Express failed to start');
-  //     console.error(err);
-  //   });
 }
 
 if (require.main === module) {
